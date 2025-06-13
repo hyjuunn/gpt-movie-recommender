@@ -53,12 +53,15 @@ async def read_root(request: Request):
 
 @app.get("/chat_stream")
 async def chat_stream(prompt: str = Query(...)):
-    messages.append({"role": "user", "content": prompt})
+    # Reset conversation to initial state with system prompt
+    current_messages = [{"role": "system", "content": movie_prompt}]
+    # Add new user message
+    current_messages.append({"role": "user", "content": prompt})
 
     async def event_stream():
         stream = client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=messages,
+            messages=current_messages,
             stream=True
         )
 
@@ -96,11 +99,14 @@ def pcm_to_wav(pcm_data):
 # Audio streaming endpoint
 @app.get("/audio_stream")
 async def audio_stream(prompt: str = Query(..., description="Text to convert to speech")):
-    messages.append({"role": "user", "content": prompt})
+    # Reset conversation to initial state with system prompt
+    current_messages = [{"role": "system", "content": movie_prompt}]
+    # Add new user message
+    current_messages.append({"role": "user", "content": prompt})
 
     chat_response = client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=messages,
+        messages=current_messages,
     )
     text = chat_response.choices[0].message.content
 
